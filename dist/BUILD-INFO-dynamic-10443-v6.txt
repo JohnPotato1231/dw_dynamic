@@ -1,0 +1,47 @@
+Filename-derived display labels with capital-letter spacing
+
+EXE: DWAgent-dynamic-10443-v6-x64.exe
+Portal: https://82.25.46.70:10443/
+Config: os_win_installer/install-dynamic-10443-v6.json
+SHA256: 8beb3ce0ff923b4ac157c2aa4120719ae230660669df7078502c560b6b481f61
+
+Each installed process gets a friendly label from its own portal filename.
+Remove a terminal .exe (case insensitive), then insert a space before every
+capital after the first character unless whitespace is already present.
+Examples:
+  Main process filename RemoDwAgentAcess.exe -> Remo Dw Agent Acess
+  Service process filename RemoDwAgentAcess.exe -> Remo Dw Agent Acess
+  Service display name RemoDwAgent -> Remo Dw Agent
+The formatted service display name controls Services and Control Panel.
+Different main/service filenames produce separate friendly descriptions.
+This is literal spacing: ABC.exe becomes A B C; no acronym grouping is applied.
+
+Keep the portal values compact, as in those examples. Filenames, internal
+Windows service identifiers, installation path, publisher and raw saved profiles
+remain unchanged. Derived labels may grow to 199 characters without truncation.
+Formatting mode is saved outside the raw profile and restored for uninstall
+and replacement helpers so registration rollback keeps its proper display label.
+Older v5 configuration retains its prior Service display name source behavior.
+
+Custom names are fetched through the existing authenticated profile during setup.
+No new portal field, server deployment or port change is required. Custom example
+profile values are not included in the installer payload. Saving portal settings
+affects new installs or verified replacements; existing installations need
+reinstalling with this EXE. Windows controls Task Manager grouping; its Details
+tab still shows actual executable filenames.
+
+Only fresh copied executables are customized before startup. Resource writes use
+private sibling staging and atomic replacement. Existing versions, copyright,
+code, icons and manifests are preserved. As with v5, customized runtime copies
+do not retain the original Python Authenticode signature. Publisher in Installed
+Apps is separate from code signing/UAC publisher.
+
+Validation: 129-test installer suite passed; the additional formatting-mode
+persistence regression also passed, for 130 installer tests in total. All 16
+portal identity/client-credential tests passed. The 15 process-description tests
+include real Windows version.dll and .NET checks, exact requested examples,
+different main/service names, long labels, legacy v5 behavior and failure cleanup.
+Archive integrity, payload source/native equality, default-only configuration,
+Python 3.8 syntax and preservation of all 73 pre-existing EXEs were verified.
+Both modified binaries passed harmless execution checks on temporary copies.
+No installed agent or live portal service was modified, started or stopped.

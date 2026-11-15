@@ -228,6 +228,30 @@ The embedded client credential can be extracted from a distributed EXE.
 Custom portal values are never packaged into the installer. Installed agents
 retain their saved profile even if the portal changes during a C retry.
 
+The v6 installer (`install-dynamic-10443-v6.json`) derives each Task Manager
+process description from that process's own portal executable filename. It
+removes a terminal `.exe` (case insensitive), then inserts a space before each
+capital after the first character unless a space is already present. Thus
+`RemoDwAgentAcess.exe` becomes `Remo Dw Agent Acess`. Main and service processes
+can have different friendly labels when their filenames differ. This is a literal
+capital-letter rule: `ABC.exe` becomes `A B C`.
+The **Service display name** is formatted separately with the same rule:
+`RemoDwAgent` becomes `Remo Dw Agent` for Services and Control Panel. Executable
+filenames, the internal Windows service name, publisher and installation path
+retain their portal values. Formatting never changes the saved raw profile.
+The earlier v5 installer uses the Service display name directly for both process
+descriptions. Its behavior is retained when rebuilding its original configuration.
+This uses the existing authenticated profile; no new portal field or server
+deployment is needed. Saving a new name affects subsequent installations or
+replacements, not processes that are already installed. Task Manager controls
+grouping and its Details tab still shows the executable filenames.
+The v6 formatting mode is saved with the installation so uninstall and replacement
+rollback use the correct service display label for that installation.
+Only installed copies receive the version-resource changes, before they are
+started. Other version metadata, copyright, icons and manifests are preserved.
+Changing an EXE's resources changes its signed bytes; these customized copies
+do not retain the original runtime's valid Authenticode signature.
+
 `update_isolated_metadata.py --password-stdin` updates only the existing
 10443 service, backs up its code/database, checks health and compares old
 listeners, process IDs, source files and credentials before/after. It does not

@@ -1,0 +1,39 @@
+Dynamic Task Manager process descriptions
+
+EXE: DWAgent-dynamic-10443-v5-x64.exe
+Portal: https://82.25.46.70:10443/
+Config: os_win_installer/install-dynamic-10443-v5.json
+SHA256: 23613de2f62fbcc2e833b35f910aefe1a54d0602364bca0c8e7ad3acf5e15e2c
+
+Set Service display name in the existing portal to the desired friendly name,
+for example Remo Dw. This value controls both installed EXEs' FileDescription
+and ProductName, the Windows service display name, and the Control Panel name.
+Executable filenames retain .exe; Windows service name remains a separate
+internal identifier. Main and service filenames can both be RemoDw.exe because
+they are installed in different folders. Publisher remains a separate setting.
+
+Names are read from the existing authenticated server profile during setup.
+There is no new portal field, server deployment or port change. The new flag
+dynamic_process_description enables this only in this new installer config.
+Saving a portal change affects new installations or verified replacements;
+already installed processes retain their existing profile until reinstalled.
+Task Manager determines process grouping. Its Details tab shows actual filenames.
+
+Only copied installation executables receive metadata changes, before startup.
+Updates are staged beside each EXE and atomically replaced after success;
+write/commit/replace failures preserve the original copy and stop installation.
+Fixed versions, existing version strings, copyright, company metadata, executable
+code, icons and manifests are preserved. Missing version strings derive from the
+fixed version so Windows and .NET readers recognize the new description.
+Changing executable resources removes the source runtime's valid Authenticode
+signature. The customized Python copy was confirmed NotSigned; it was not signed
+as any portal Publisher. Code signing/UAC publisher is a separate mechanism.
+
+Validation: 123 installer tests and 16 portal identity/client credential tests
+passed, including eight real Windows process-description integration tests.
+Independent version.dll and .NET FileVersionInfo reads confirmed both labels.
+Both customized runtime and native service executables passed harmless execution
+checks on temporary copies. No agent service was installed, started or stopped.
+Payload archive integrity, source/native equality, default-only installer profile,
+Python 3.8 syntax and preservation of all 72 pre-existing EXEs were verified.
+The portal and its existing services/ports were not modified.

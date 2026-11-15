@@ -20,6 +20,7 @@ from setup_auth import (valid_access_config, verify_access_password,
                         validate_install_identity, validate_install_path)
 from setup_files import (verify_protected_directory, verify_no_reparse_points,
                          rename_with_retry)
+from setup_version import format_display_name, set_executable_description
 
 
 ACCESS_FILE = "setup-access.json"
@@ -44,6 +45,7 @@ class SupportWindows(installer.NativeWindows):
         super().__init__()
         self._service_executable = "dwagsvc.exe"
         self._install_identity = None
+        self._format_display_names = False
         self._service_tool_path = None
         self.last_service_error = ""
 
@@ -52,17 +54,22 @@ class SupportWindows(installer.NativeWindows):
         if self._install_identity and name == self._install_identity["service_name"]:
             self._runtime = self._install_identity["main_executable"]
 
-    def set_install_identity(self, identity):
+    def set_install_identity(self, identity, *, format_display_names=False):
         self._install_identity = validate_install_identity(identity)
+        self._format_display_names = bool(format_display_names)
         self.set_name(self._install_identity["service_name"])
         self.set_service_executable(self._install_identity["service_executable"])
+
+    def get_service_display_name(self):
+        value = self._install_identity["service_display_name"]
+        return format_display_name(value) if self._format_display_names else value
 
     def prepare_file(self):
         super().prepare_file()
         if self._install_identity:
             properties = Path(self._install_path) / "native" / "service.properties"
             with properties.open("a", encoding="utf-8") as stream:
-                stream.write("\nserviceDisplayName=" + self._install_identity["service_display_name"] + "\n")
+                stream.write("\nserviceDisplayName=" + self.get_service_display_name() + "\n")
                 stream.write("publisher=" + self._install_identity.get("publisher", "DWService") + "\n")
 
     def set_service_executable(self, name):
@@ -284,7 +291,8 @@ class SupportInstall(installer.Install):
         self._options["name"] = self._name
         self._options["service_executable"] = identity["service_executable"]
         self._options["install_identity"] = identity
-        self._native.set_install_identity(identity)
+        self._native.set_install_identity(identity, format_display_names=
+                                        self._options.get("process_description_from_filename", False))
 
     def step_code(self, current):
         if self._options.get("combined_password_code"):
@@ -423,6 +431,8 @@ class SupportInstall(installer.Install):
             marker = {"format": 1, "installation_id": os.urandom(16).hex(),
                       "remote_password": self._options.get("remote_password"),
                       "install_identity": self._options["install_identity"]}
+            if self._options.get("process_description_from_filename"):
+                marker["process_description_from_filename"] = True
             (destination / "setup-owner.json").write_text(json.dumps(marker, indent=2) + "\n", encoding="utf-8")
 
     def _plan_replacement(self, destination):
@@ -471,7 +481,8 @@ class SupportInstall(installer.Install):
         if identity["service_name"] != self._name and (registered is not None or state is not None):
             raise ValueError("Another Windows service already uses the new service name.")
         old_native = SupportWindows()
-        old_native.set_install_identity(identity)
+        old_native.set_install_identity(identity, format_display_names=
+                                        access.get("process_description_from_filename", False))
         old_native.set_install_path(str(destination))
         old_registered = old_native.get_install_path()
         if old_registered is not None and Path(old_registered) != destination:
@@ -498,7 +509,7 @@ class SupportInstall(installer.Install):
             shutil.copy2(source, executable)
             identity = native._install_identity
             properties = {"serviceName": native._name, "workPath": native._install_path,
-                          "serviceDisplayName": identity["service_display_name"],
+                          "serviceDisplayName": native.get_service_display_name(),
                           "publisher": identity.get("publisher", "DWService"),
                           "pythonPath": str(Path(native._install_path) / "runtime" / identity["main_executable"])}
             (folder / "service.properties").write_text(
@@ -583,18 +594,36 @@ class SupportInstall(installer.Install):
         if self._options.get("server_install_identity") and not self._bmock:
             self._rename_installed_component("runtime", "dwagent.exe",
                                              self._options["install_identity"]["main_executable"])
+            self._set_installed_process_description("runtime", "main_executable")
 
     def copy_native(self, start, end):
         super().copy_native(start, end)
         if self._options.get("server_install_identity") and not self._bmock:
             self._rename_installed_component("native", "dwagsvc.exe",
                                              self._options["install_identity"]["service_executable"])
+            self._set_installed_process_description("native", "service_executable")
+
+    def _set_installed_process_description(self, directory, filename_key):
+        if not self._options.get("dynamic_process_description"):
+            return
+        identity = validate_install_identity(self._options["install_identity"])
+        executable = Path(self._install_path.get()) / directory / identity[filename_key]
+        display_name = (format_display_name(identity[filename_key])
+                        if self._options.get("process_description_from_filename")
+                        else identity["service_display_name"])
+        # Update the installed copy before any process or service starts. The
+        # friendly description is separate from the mandatory .exe filename.
+        try:
+            set_executable_description(executable, display_name, product_name=display_name)
+        except (OSError, ValueError) as error:
+            raise RuntimeError("Cannot set the Task Manager name for " +
+                               executable.name + ": " + str(error)) from error
 
     def _download_files(self, start, end):
         super()._download_files(start, end)
         destination = Path(self._install_path.get())
         source = Path(__file__).resolve().parent
-        for name in ("support_setup.py", "setup_auth.py", "setup_files.py", "uninstall.cmd"):
+        for name in ("support_setup.py", "setup_auth.py", "setup_files.py", "setup_version.py", "uninstall.cmd"):
             shutil.copy2(source / name, destination / name)
         # Keep the custom progress UI and tray status after the agent download.
         (destination / "ui").mkdir(exist_ok=True)
@@ -608,6 +637,8 @@ class SupportInstall(installer.Install):
         access["service_executable"] = self._options.get("service_executable", "dwagsvc.exe")
         if self._options.get("server_install_identity"):
             access["install_identity"] = validate_install_identity(self._options["install_identity"])
+            if self._options.get("process_description_from_filename"):
+                access["process_description_from_filename"] = True
         (destination / ACCESS_FILE).write_text(
             json.dumps(access, indent=2) + "\n",
             encoding="utf-8")
@@ -658,7 +689,8 @@ class SupportUninstall(installer.Uninstall):
             self._access_config = access
             self._native.set_service_executable(access.get("service_executable", "dwagsvc.exe"))
             if "install_identity" in access:
-                self._native.set_install_identity(access["install_identity"])
+                self._native.set_install_identity(access["install_identity"], format_display_names=
+                                                 access.get("process_description_from_filename", False))
         except (OSError, ValueError, AttributeError):
             self._password_record = None
             self._access_config = None

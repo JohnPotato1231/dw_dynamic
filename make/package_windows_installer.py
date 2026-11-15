@@ -83,7 +83,7 @@ def main():
                  "detectinfo.py", "native.py", "resources.py", "cacerts.pem"):
         shutil.copy2(root / "core" / name, stage / name)
     shutil.copy2(root / "os_win_installer" / "installer.py", stage / "installer.py")
-    for name in ("support_setup.py", "setup_auth.py", "setup_files.py", "uninstall.cmd"):
+    for name in ("support_setup.py", "setup_auth.py", "setup_files.py", "setup_version.py", "uninstall.cmd"):
         shutil.copy2(root / "os_win_installer" / name, stage / name)
 
     # Resource loaders use ui.messages and ui.images, so preserve the package.

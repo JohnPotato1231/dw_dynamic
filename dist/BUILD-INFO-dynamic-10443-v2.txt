@@ -1,0 +1,49 @@
+Dynamic installation metadata / combined P + C release
+
+EXE: DWAgent-dynamic-10443-v2-x64.exe
+Portal: https://82.25.46.70:10443/
+Configuration: os_win_installer/install-dynamic-10443-v2.json
+
+The same isolated portal manages P, process filenames, Windows service name,
+service display name, installation folder, and Installed Apps Publisher.
+Only P and C appear on the installer credential screen. Both are required.
+P is cleared after submission. C retries require fresh P authorization, and
+already installed components retain their saved names/path/publisher.
+
+Path blank: actual Windows Program Files / selected service name.
+Custom path: new subfolders under the actual Windows Program Files directory,
+for example %ProgramFiles%\Company\Agent. Existing vendor folders, junctions,
+network drives, and folders outside Program Files are refused. Program Files
+is resolved through Windows rather than inherited environment variables.
+UTF-16 path length is bounded for the selected service name and native buffers.
+Publisher changes the Installed Apps entry. UAC Publisher requires code signing.
+
+New clients request install_identity_version 2. Older 10443 clients retain the
+original four-field API response. The EXE contains only DWAgent naming defaults;
+custom portal metadata requires P and the independent built-in client credential.
+An embedded credential remains extractable from a distributed EXE.
+
+Validation:
+- 139 Python tests passed: 77 installer and 62 portal/client tests.
+- Native service registration and Publisher registry/property tests passed;
+  registry testing used an isolated temporary HKCU key, not installed apps.
+- Custom Unicode Publisher and default Publisher fallback verified.
+- Live HTTPS, both credentials, P-only responses, legacy four-field compatibility,
+  metadata v2, cookie isolation, restart persistence and immediate revocation passed.
+- Temporary live-test P and session removed after each test run.
+- Earlier listeners/process IDs, original source/unit files and password records
+  compared unchanged before/after each isolated 10443 update.
+- All 35 earlier EXEs retain their recorded SHA256 hashes.
+- Extracted final payload matches the current installer source/native binary,
+  parses as Python 3.8, and contains no server-specific custom names.
+- Combined P/C form visually checked using a preview with elevation/install disabled.
+- Actual Windows Program Files API read succeeded on this PC.
+- No DWAgent was installed, stopped, renamed or removed during this work.
+
+Artifacts:
+SHA256SUMS-dynamic-10443-v2.txt
+portal-dynamic-10443-v2-source.zip
+
+Deployment/verification records: make/tmp/dynamic-10443-v2/
+The isolated service remains remo-dynamic-portal.service; only it was restarted.
+Earlier EXEs and their configuration files were preserved.

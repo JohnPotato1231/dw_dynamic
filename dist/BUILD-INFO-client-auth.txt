@@ -1,0 +1,33 @@
+DWAgent client credential and portal-managed P
+
+Installer: DWAgent-client-auth-x64.exe
+Portal update: portal-client-auth-update.zip
+
+Custom names require BOTH the built-in installer credential and a valid portal-managed P.
+The built-in credential is sent in an HTTPS Authorization header only for name requests.
+The server holds its salted PBKDF2 hash, separately from the portal database's P records.
+Missing/wrong installer credential: HTTP 401, no names. Wrong P: HTTP 403, no names.
+Changing P in the existing portal does not change the built-in credential. No new TCP port.
+Legacy P-only requests keep their old boolean response without names.
+Default installation identity remains dwagent.exe, dwagsvc.exe and DWAgent.
+Local recovery does not grant server branding. Failed requests clear previously received names.
+Known names can be copied manually. A distributed EXE's built-in credential can be extracted and reused.
+This is an additional credential check, not proof that the requester is the original EXE.
+
+Validation:
+59 installer tests passed; 14 identity/client-credential tests passed; 20 portal tests passed; 17 audit tests passed (110 total).
+Native code unchanged from the previous verified build; its two native checks passed.
+Final 7-Zip integrity/extraction checks passed. Packaged auth/setup modules match current source and parse as Python 3.8.
+Packaged client credential matches the server's salted hash; the server source does not contain its plaintext value.
+Default config and profile separation verified; old security-service and example portal names absent from unpacked payload.
+The current Windows agent was not installed, stopped, renamed or removed.
+
+Live deployment is pending: SSH requires a private-key file; the existing server has not been changed.
+Deploy the updated portal and use this updated EXE together; older EXEs do not contain the new client credential.
+After deployment, save your desired names through Installation names in the portal.
+
+Build:
+python make/package_windows_installer.py --stub make/tmp/server-identity/installer-stub-x64.exe --runtime-archive installer_payload_20260926221211/stage/runtimepy3.7z --runtime-license installer_payload_20260926221211/stage/LICENSES/runtime --sevenzip C:/Users/HP/scoop/shims/7z.exe --native-dir make/tmp/server-identity/native --install-config os_win_installer/install.json --output dist/DWAgent-client-auth-x64.exe
+
+fdbc5c7c6b8b920077e39721c24a10e501ffe7519368e440a6479a5608fb1432  DWAgent-client-auth-x64.exe
+d3d9f0a078003ae01c478b3316018e7c0e93d08a9e83653947291497ca3d89b2  portal-client-auth-update.zip

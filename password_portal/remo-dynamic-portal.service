@@ -1,0 +1,25 @@
+[Unit]
+Description=REMO dynamic agent portal on isolated HTTPS port 10443
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=remo-dynamic
+Group=remo-dynamic
+WorkingDirectory=/opt/remo-dynamic-portal
+ExecStart=/usr/bin/python3 -B /opt/remo-dynamic-portal/server.py --database /var/lib/remo-dynamic-portal/state.sqlite3 --certificate /var/lib/remo-dynamic-portal/server.crt --private-key /var/lib/remo-dynamic-portal/server.key --origin https://82.25.46.70:10443 --port 10443 --cookie-name remo_dynamic_10443
+Restart=on-failure
+RestartSec=3
+UMask=0077
+NoNewPrivileges=true
+CapabilityBoundingSet=
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/remo-dynamic-portal
+MemoryMax=256M
+TasksMax=40
+
+[Install]
+WantedBy=multi-user.target

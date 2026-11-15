@@ -1,0 +1,54 @@
+Windows installer replacement and uninstall reliability release
+
+EXE: DWAgent-dynamic-10443-v3-x64.exe
+Config: os_win_installer/install-dynamic-10443-v3.json
+Portal remains https://82.25.46.70:10443/ (no portal/service/port deployment in this update).
+The installer still collects P and C together; dynamic names/path/publisher stay on the portal.
+
+Replacement:
+- After P authorization, a matching existing installation can be replaced in the same folder.
+- Verify protected directory owner/permissions, absence of junctions, saved portal trust/identity,
+  service properties, registry InstallLocation and actual service executable path.
+- Use the fresh bundled service helper, never the old folder's helper.
+- Stop the verified service/monitor, rename the old folder to an unused sibling named
+  <folder>.previous-<timestamp>-<random>, remove its own registrations, then install fresh.
+- Keep the old files as a backup. Sharing failures use bounded retries; cleanup failures
+  restore the old folder and attempt to restore old registrations and its running service.
+- Empty protected folders and v3-owned partial installations are recoverable.
+- Unverified folders and unrelated services are refused; nothing in them is deleted.
+- Later download/copy/link failures retain the backup for recovery; this is a fresh install,
+  not a transactional in-place upgrade preserving the previous account link.
+- If a previous uninstaller left its marker, wait out older helper retries before reusing
+  the old path. New cleanup helpers verify directory identity and installation generation.
+
+Uninstall:
+- Native registry cleanup previously ignored RegDeleteKey failures; a key with subkeys
+  could remain while the helper reported OK. Exact application registration trees now
+  use RegDeleteTreeW; missing objects are idempotent success.
+- A shared Start menu folder's unrelated files remain intact and do not block removal.
+- Stop/delete handle already stopped/absent, pending states, concurrent removal and bounded
+  timeouts. True access/timeout/sharing failures remain visible with numeric Windows errors.
+- Python displays native error details and system explanations instead of a blanket
+  administrator message. The user's old message alone cannot establish its historical cause.
+- Cleanup helpers use unique temporary copies with checked copy/process results; generation
+  guards prevent stale helpers from deleting a newly installed agent at the same path.
+
+Validation:
+- Full installer suite: 115 Python tests passed.
+- Native lifecycle suite: 29 scenarios passed, including a real isolated HKCU registration
+  tree with subkeys and a neighboring unrelated registration.
+- Native launcher cleanup, existing service identity and publisher metadata tests passed.
+- Tests exercised real temporary folder renames, file sharing locks, permissions policy,
+  failed replacement rollback, partial ownership recovery and private helper properties.
+- Read-only Windows Program Files/installed-folder ACL and SCM image-path queries passed.
+- Final EXE archive tested/extracted; source and both native helpers match staging exactly;
+  Python payload parses as Python 3.8 and contains no server-specific custom naming values.
+- All 36 previously recorded EXEs retain their hashes. No earlier artifact was overwritten.
+- No agent/service was installed, stopped, renamed, removed or replaced on this PC.
+- No live portal files, ports, credentials or services were changed by this update.
+
+Checksums: SHA256SUMS-dynamic-10443-v3.txt
+Verification records and isolated test executables: make/tmp/dynamic-10443-v3/
+
+Run the new EXE with P and C to install these fixes. Already installed older uninstallers
+continue using their old code until the installation is replaced with this release.

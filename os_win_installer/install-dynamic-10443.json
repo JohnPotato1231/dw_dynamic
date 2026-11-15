@@ -1,0 +1,21 @@
+{
+  "name": "DWAgent",
+  "title": "REMO",
+  "logoxos": "remo.ico",
+  "service_executable": "dwagsvc.exe",
+  "setup_flow": "password_code",
+  "remote_password": {
+    "url": "https://82.25.46.70:10443/api/verify",
+    "ca_pem": "-----BEGIN CERTIFICATE-----\nMIIELjCCApagAwIBAgIUSmKUjEB1WgEq2vN5CAXmt1dOVKwwDQYJKoZIhvcNAQEL\nBQAwFjEUMBIGA1UEAwwLODIuMjUuNDYuNzAwHhcNMjYxMTE1MTExMjQzWhcNMzYx\nMTEyMTExMjQzWjAWMRQwEgYDVQQDDAs4Mi4yNS40Ni43MDCCAaIwDQYJKoZIhvcN\nAQEBBQADggGPADCCAYoCggGBALP0hZHLImYDtbNlUyWFD4C38pLLUHlj7ddXTpYF\nI5tMt9W/OFKMHwHtKRxdbJqrgKCq7XD/ojYkNKzJIpgvHQZ5/KHJscNcAHZOz0RK\nKaqKqYGJ0rQEwi4Hm47kHwzvN5cBROGn5GPckWr0XoWrtpAl9HgoEJN/E+YOpE0j\nLNXdrlr6S/MrrA1F3ke3xhBeugMwGjqHJhVQz8pe+RhGX3tsQUUIflrDArzAbObH\nGFT21mPwWUN4hLtrgbbK8xfrXYsXJ3sJ8o1upzQS+hppFBgu7+y690EXQHfcCI/Z\nBiKFn8vxandx0tFD4gFL5h41YkeSyZOn8am8sBQD1Tc7bSJGNR5TxpARg3DprXut\n6ej9he7hTmqblStHr8GWt+3+tH0e0VOzk9z1KwDxyR7x5VAqRfVO8c1jubGqfvw9\n0EiTDGtY2g3JNDq45wTlmKZ4cl4Jr5IPp7hVxkkvAs98La43TY4hNiq4NIRpfprP\nKsJ9Ga+wcWat9NxfUF5BMAMTAwIDAQABo3QwcjAdBgNVHQ4EFgQULOCXbKt7XXQl\ngyhe2PcLRTjp7jcwHwYDVR0jBBgwFoAULOCXbKt7XXQlgyhe2PcLRTjp7jcwDwYD\nVR0RBAgwBocEUhkuRjAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwICpDAN\nBgkqhkiG9w0BAQsFAAOCAYEAUXHEhOU8FyuFkiUKB06tb40b5i5qsO+uap26TVl2\nXzF94T/Gv/bUGnXPNHfn+bnze7NbZtO1jy73E90aqbwthkByei4z7kZLik34h81k\n+nnVZT6Dphc0A1IjetWyHrKQdW7b8h9OLXItZWIAuHmBehSiVqpQJKHNsb+sxivX\nKQjnFoVW7fBO8bi9zqvEf9YLb9cMB+ph0LYR8ylticmFUTpnQLfdZbvFtjgaicaW\nNhKDT5kt/xOAc2E8y9nGo0dJQ6SQXvhDSp/xu/fXroJ877kp6Pe2ZaPPaQiW8lfS\nlcMkbgCAyC4sTlWWki9br8UihcInPnsTu7+RYvYxLhxmu73Ov/GJ3STFuR94MdrN\nUZEMmnZOP4lVOlrwsMKdEUBjuGDbxQJ3DWABctW/q8hRfencWjGOklCX7MSOJrHV\n2rf2/iSvnQ1g8uuZt7KKOqJcVqFAWEO8Q70XB66+NArEQwfbgU68j8ibB4r182x9\nJ8NYllTd7P1qV1fE3Ed+sVko\n-----END CERTIFICATE-----\n"
+  },
+  "monitor_desktop_notification": "none",
+  "monitor_tray_icon": false,
+  "recovery_password": {
+    "algorithm": "pbkdf2-sha256",
+    "iterations": 600000,
+    "salt": "a7e6a7125046b9b7b7a59c5489a6b552",
+    "digest": "16e72ea10ded8d3efb38055a5cfc25322cc35301d64fa4177e1abb062d8dbb3e"
+  },
+  "progress_only": true,
+  "server_install_identity": true
+}

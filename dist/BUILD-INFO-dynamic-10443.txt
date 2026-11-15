@@ -1,0 +1,44 @@
+Isolated dynamic DWAgent release on HTTPS 10443
+
+EXE: DWAgent-dynamic-10443-x64.exe
+Portal/API: https://82.25.46.70:10443/
+API endpoint: https://82.25.46.70:10443/api/verify
+Both P management and dynamic naming use this one NEW port.
+Service: remo-dynamic-portal.service (active, enabled on boot)
+Code: /opt/remo-dynamic-portal
+State: /var/lib/remo-dynamic-portal
+User/group: remo-dynamic
+Browser session cookie: remo_dynamic_10443
+
+Initial admin and P records were copied consistently from the current portal.
+The same portal admin credentials initially work on the new portal. Later P/admin-password edits on either portal are independent.
+The original API/admin/other services on 443, 9443 and 8443 were not replaced, restarted or reconfigured.
+Original listener addresses/process IDs, service source/unit files and P credentials were verified unchanged.
+All 34 previously existing EXE files retain their original SHA256 hashes.
+Original os_win_installer/install.json was preserved; new config is install-dynamic-10443.json.
+
+Custom names require both a valid new-portal P and the separate built-in installer credential over verified HTTPS.
+Default EXE identity: dwagent.exe, dwagsvc.exe, service name/display DWAgent.
+Initial SERVER-ONLY profile: main remo_dwagent.exe; service process remo_dwagsvc.exe; service name remo_dwagent; display REMO Remote Support.
+Names can be edited in Installation names on the NEW portal. Existing installations retain their saved names.
+Missing/incorrect installer credential returns 401 with no names. Incorrect/revoked P returns 403 with no names.
+Legacy P-only verification on the new port returns only allowed, never custom names.
+Hardcoded client credentials remain extractable; this is not proof of exclusive EXE identity.
+
+Validation:
+- 112 automated Python tests passed (59 installer, 20 portal, 17 audit, 14 identity/credential, 2 isolation/port tests).
+- Native code is unchanged from the previously verified build, with its registration/property/metadata checks passed.
+- Public HTTPS health and pinned-certificate client requests passed.
+- Live positive and negative credential combinations, P-only responses, cookie isolation, immediate revocation, restart persistence and credential-free journal checks passed.
+- Only a temporary P and session in the NEW database were used for live tests; both were removed.
+- Original HTTPS ports 443 and 9443 returned 200 after deployment; original 8443 listener/process remained unchanged.
+- Final EXE archive integrity and extraction passed. Payload matches current source/native code, parses as Python 3.8, uses the new certificate/10443 URL, and contains no custom process names or old security-service names.
+- The Windows agent was not installed, stopped, renamed or removed during this work.
+
+Build:
+python make/package_windows_installer.py --stub make/tmp/server-identity/installer-stub-x64.exe --runtime-archive installer_payload_20260926221211/stage/runtimepy3.7z --runtime-license installer_payload_20260926221211/stage/LICENSES/runtime --sevenzip C:/Users/HP/scoop/shims/7z.exe --native-dir make/tmp/server-identity/native --install-config os_win_installer/install-dynamic-10443.json --output dist/DWAgent-dynamic-10443-x64.exe
+
+Stopping only the new service, if needed:
+sudo systemctl disable --now remo-dynamic-portal.service
+
+Checksums are in SHA256SUMS-dynamic-10443.txt. Deployment and live-test records are under make/tmp/dynamic-10443.

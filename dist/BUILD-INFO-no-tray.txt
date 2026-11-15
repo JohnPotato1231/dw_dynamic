@@ -1,0 +1,12 @@
+﻿Recommended installer: MyDWagent2-no-tray-x64.exe
+All earlier dist installer filenames now contain identical copies of this corrected custom build.
+Repository: https://github.com/JohnPotato1231/dw.git
+Commit: 4dec9052bc22f2b1011aab7909fffc7ce786aa8e
+Target: Windows x64
+Configuration: original os_win_installer/install.json with only monitor_tray_icon changed from true to false.
+Original REMO branding, MyDWagent2 identity, custom service executable, password/code setup, authentication settings, progress UI, custom monitor code, and uninstall flow are included.
+Preserved source: packaged custom setup/auth/removal/UI Python files match repository files; original feature source files have no edits.
+Extraction fix: embedded architecture-compatible Windows 10/11 manifest, so the installer correctly selects its bundled Python 3 runtime.
+Verification: final configuration equals original Git configuration apart from tray visibility; final entrypoint selects custom setup; production decoder extracts both archives; 52 custom setup tests pass; 7-Zip integrity passes.
+Build command: python make/package_windows_installer.py --stub make/tmp/installer-stub-x64/installer-stub-x64.exe --runtime-archive installer_payload_20260926221211/stage/runtimepy3.7z --runtime-license installer_payload_20260926221211/stage/LICENSES/runtime --sevenzip C:/Users/HP/scoop/shims/7z.exe --install-config os_win_installer/install.json --output dist/MyDWagent2-no-tray-x64.exe
+Build log: make/package-custom-no-tray-build.log

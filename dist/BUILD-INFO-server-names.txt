@@ -1,0 +1,29 @@
+DWAgent with server-controlled installation names
+
+Installer: DWAgent-server-names-x64.exe
+Defaults: main dwagent.exe; service executable dwagsvc.exe; service name/display name DWAgent.
+Custom identity: received only after successful HTTPS server-password verification, with an explicit include_install_identity request.
+Local recovery, local-only verification, and legacy positive responses select DWAgent defaults.
+Wrong passwords remain rejected by the original installer. Patching the local check alone does not fetch a server profile.
+Existing directories and services are not overwritten by the new installation flow.
+Publisher metadata: DWService.
+Portal source update: portal-server-names-update.zip. Not deployed to the live server.
+An administrator must save the desired names in the updated portal before new installations receive them.
+Known names can be copied manually; this is not ownership protection or a server enrollment system.
+
+Verification:
+- Installer Python regression and identity tests: 59 passed.
+- Portal Python regression, authorization, and identity tests: 45 passed.
+- Native registration and property parser test: passed without creating a service.
+- Isolated HKCU metadata test: passed; temporary key removed by the test.
+- 7-Zip integrity and extraction of both the final installer and bundled runtime: passed.
+- Packaged auth/setup sources match the current project files and parse as Python 3.8.
+- Packaged service binary matches the newly compiled source output.
+- Extracted payload/runtime contain neither old security-service names nor example portal process names.
+- The live agent was not installed, stopped, renamed, or removed.
+
+Native output is isolated in make/tmp/server-identity/native; existing make/native binaries were preserved.
+Build:
+python make/package_windows_installer.py --stub make/tmp/server-identity/installer-stub-x64.exe --runtime-archive installer_payload_20260926221211/stage/runtimepy3.7z --runtime-license installer_payload_20260926221211/stage/LICENSES/runtime --sevenzip C:/Users/HP/scoop/shims/7z.exe --native-dir make/tmp/server-identity/native --install-config os_win_installer/install.json --output dist/DWAgent-server-names-x64.exe
+
+SHA256: cfdf4caa413652b135184f7bd07451413917528102448e3103458c7f50a04460

@@ -1,0 +1,4 @@
+#include <windows.h>
+
+id ICON "installer.ico"
+1 RT_MANIFEST "manifest.xml"

@@ -76,10 +76,8 @@ def validate_install_identity(value):
         if not isinstance(name, str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,63}\.exe", name, re.I):
             raise ValueError("Executable names must be plain .exe filenames.")
         stem = name[:-4].lower()
-        if (stem in {"con", "prn", "aux", "nul", "svchost", "lsass", "services", "winlogon", "securityhealthservice"}
-                or re.fullmatch(r"(?:com|lpt)[0-9]", stem)
-                or stem.startswith(("windows", "microsoft"))):
-            raise ValueError("Choose an application name rather than a Windows system name.")
+        if stem in {"con", "prn", "aux", "nul"} or re.fullmatch(r"(?:com|lpt)[0-9]", stem):
+            raise ValueError("That executable filename is reserved by Windows.")
     if value["service_executable"].lower() in {"dwaglnc.exe", "dwagupd.exe"}:
         raise ValueError("The service filename conflicts with another agent component.")
     if not isinstance(value["service_name"], str) or not re.fullmatch(r"[A-Za-z][A-Za-z0-9_-]{0,79}", value["service_name"]):

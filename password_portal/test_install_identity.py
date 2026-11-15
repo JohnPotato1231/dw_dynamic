@@ -100,9 +100,8 @@ class IdentityPortalTests(unittest.TestCase):
             self.assertEqual(self.request("/api/verify", {"password": "initial-exe-password",
                 "include_install_identity": True})[0], 429)
 
-    def test_client_and_portal_reject_paths_properties_injection_and_system_names(self):
-        invalid = [("main_executable", "../agent.exe"), ("main_executable", "svchost.exe"),
-                   ("main_executable", "Windows-Security-Health-Service.exe"),
+    def test_client_and_portal_reject_paths_properties_injection_and_reserved_filenames(self):
+        invalid = [("main_executable", "../agent.exe"),
                    ("main_executable", "NUL.exe"), ("main_executable", "agent.exe & calc"),
                    ("service_executable", "dwaglnc.exe"), ("service_name", "name\npythonPath=bad"),
                    ("service_name", "../name"), ("service_display_name", "name\nparameters=bad")]
@@ -110,6 +109,24 @@ class IdentityPortalTests(unittest.TestCase):
             for validator in (auth.validate_install_identity, portal.validate_install_identity):
                 with self.subTest(key=key, value=value, validator=validator.__module__), self.assertRaises(ValueError):
                     validator({**PROFILE, key: value})
+
+    def test_application_names_are_not_filtered_by_windows_or_microsoft_prefix(self):
+        for name in ("WindowsSupport.exe", "MicrosoftConnector.exe", "Windows-RemoteAgent.exe"):
+            profile = {**PROFILE, "main_executable": name, "service_executable": name}
+            for validator in (auth.validate_install_identity, portal.validate_install_identity):
+                with self.subTest(name=name, validator=validator.__module__):
+                    self.assertEqual(validator(profile), profile)
+
+    def test_admin_can_save_previously_filtered_names_and_authorized_client_receives_them(self):
+        profile = {**PROFILE, "main_executable": "WindowsSupport.exe",
+                   "service_executable": "MicrosoftConnector.exe"}
+        cookie, csrf = self.login()
+        self.assertEqual(self.request("/install-identity", {**profile, "csrf": csrf}, cookie)[0], 303)
+        status, _, body = self.request("/api/verify", {
+            "password": "initial-exe-password", "include_install_identity": True},
+            extra_headers={"Authorization": "Bearer " + auth._INSTALL_IDENTITY_CLIENT_PASSWORD})
+        self.assertEqual(status, 200)
+        self.assertEqual(auth.validate_install_identity(json.loads(body)["install_identity"]), profile)
 
 
 class IdentityClientTests(unittest.TestCase):
